@@ -2,12 +2,13 @@
 import logging
 
 import faust
-
+from attr import dataclass
 
 logger = logging.getLogger(__name__)
 
 
 # Faust will ingest records from Kafka in this format
+@dataclass
 class Station(faust.Record):
     stop_id: int
     direction_id: str
@@ -22,6 +23,7 @@ class Station(faust.Record):
 
 
 # Faust will produce records to Kafka in this format
+@dataclass
 class TransformedStation(faust.Record):
     station_id: int
     station_name: str

@@ -16,8 +16,6 @@ class Producer:
 
     # Tracks existing topics across all Producer instances
     existing_topics = set([])
-    BROKER = "broker"
-    REGISTRY = "registry"
     BROKER_URL = common.BROKER_URL
     SCHEMA_REGISTRY_URL = common.SCHEMA_REGISTRY_URL
 
@@ -37,15 +35,14 @@ class Producer:
         self.num_replicas = num_replicas
 
         schema_registry = CachedSchemaRegistryClient(self.SCHEMA_REGISTRY_URL)
-        #
-        #
-        # TODO: Configure the broker properties below. Make sure to reference the project README
-        # and use the Host URL for Kafka and Schema Registry!
-        #
-        #
+
         self.broker_properties = {
-            self.BROKER: self.BROKER_URL,
-            self.REGISTRY: schema_registry
+            "bootstrap.servers": self.BROKER_URL,
+            "linger.ms": 10000,
+            "acks": 1,
+            "retries": 3,
+            "message.max.bytes": 4 * 4096,
+            "batch.num.messages": 10
         }
 
         # If the topic does not already exist, try to create it
@@ -53,8 +50,8 @@ class Producer:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        self.producer_inst: AvroProducer = AvroProducer({"bootstrap.servers": self.broker_properties[self.BROKER]},
-                                                        schema_registry=self.broker_properties[self.REGISTRY])
+        self.producer_inst: AvroProducer = AvroProducer(self.broker_properties,
+                                                        schema_registry=schema_registry)
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
@@ -74,11 +71,6 @@ class Producer:
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        #
-        #
-        # TODO: Write cleanup code for the Producer here
-        #
-        #
         if self.producer_inst:
             self.producer_inst.flush()
             self.producer_inst = None
