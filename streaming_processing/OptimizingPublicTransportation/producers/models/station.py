@@ -4,8 +4,8 @@ from pathlib import Path
 
 from confluent_kafka import avro
 
-from models import Turnstile
-from models.producer import Producer
+from producers.models import Turnstile
+from producers.models.producer import Producer
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class Station(Producer):
     #
     # TODO: Define this value schema in `schemas/station_value.json, then uncomment the below
     #
-    #value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
+    value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
 
     def __init__(self, station_id, name, color, direction_a=None, direction_b=None):
         self.name = name

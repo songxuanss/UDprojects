@@ -12,9 +12,9 @@ import tornado.web
 logging.config.fileConfig(f"{Path(__file__).parents[0]}/logging.ini")
 
 
-from consumer import KafkaConsumer
-from models import Lines, Weather
-import topic_check
+from consumers.consumer import KafkaConsumer
+from consumers.models import Lines, Weather
+import consumers.topic_check
 
 
 logger = logging.getLogger(__name__)

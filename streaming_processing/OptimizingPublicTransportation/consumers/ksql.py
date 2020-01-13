@@ -4,7 +4,7 @@ import logging
 
 import requests
 
-import topic_check
+import consumers.topic_check
 
 
 logger = logging.getLogger(__name__)
