@@ -40,7 +40,7 @@ class Turnstile(Producer):
         #
         #
         super().__init__(
-            f"{station_name}_turnstile_event",
+            "turnstile_event",
             key_schema=Turnstile.key_schema,
             num_partitions=self.num_partitions,
             num_replicas=self.num_replicas

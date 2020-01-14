@@ -4,7 +4,7 @@ import logging
 
 import requests
 
-import consumers.topic_check
+from consumers import topic_check
 
 
 logger = logging.getLogger(__name__)
@@ -23,14 +23,24 @@ KSQL_URL = "http://localhost:8088"
 
 KSQL_STATEMENT = """
 CREATE TABLE turnstile (
-    ???
+    station_id int,
+    station_name varchar,
+    line varchar
 ) WITH (
-    ???
+    KAFKA_TOPIC='turnstile_event',
+    VALUE_FORMAT='AVRO',
+    KEY='station_id'
 );
 
-CREATE TABLE turnstile_summary
-WITH (???) AS
-    ???
+CREATE TABLE turnstile_summary (
+    station_id int,
+    count int  
+) WITH (
+    KAFKA_TOPIC='TURNSTILE_SUMMARY',
+    VALUE_FORMAT='JSON',
+    KEY='station_id') AS
+    SELECT station_id, count(*)
+    GROUP BY station_id
 """
 
 

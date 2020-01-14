@@ -4,12 +4,13 @@ import logging
 
 import requests
 
+from consumers import topic_check
 
 logger = logging.getLogger(__name__)
 
 
 KAFKA_CONNECT_URL = "http://localhost:8083/connectors"
-CONNECTOR_NAME = "stations"
+CONNECTOR_NAME = "stations2"
 
 def configure_connector():
     """Starts and configures the Kafka Connect connector"""
@@ -37,7 +38,7 @@ def configure_connector():
                "table.whitelist": "stations",
                "mode": "incrementing",
                "incrementing.column.name": "stop_id",
-               "topic.prefix": "station",
+               "topic.prefix": "org.chicago.cta.",
                "poll.interval.ms": 6000000,
                "task.max": 100
            },
