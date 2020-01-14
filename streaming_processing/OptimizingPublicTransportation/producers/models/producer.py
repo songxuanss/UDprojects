@@ -7,6 +7,7 @@ from confluent_kafka import avro
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.avro import AvroProducer, CachedSchemaRegistryClient
 from common import common
+from consumers import topic_check
 
 logger = logging.getLogger(__name__)
 
@@ -50,12 +51,15 @@ class Producer:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        self.producer_inst: AvroProducer = AvroProducer(self.broker_properties,
-                                                        schema_registry=schema_registry)
+        self.producer: AvroProducer = AvroProducer(self.broker_properties,
+                                                   schema_registry=schema_registry)
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
         # TODO: Write code that creates the topic for this producer if it does not already exist on
+        if topic_check.topic_exists(self.topic_name):
+            return
+
         client = AdminClient({"bootstrap.servers": self.BROKER_URL})
         futures = client.create_topics([NewTopic(topic=self.topic_name, num_partitions=self.num_partitions,
                                                  replication_factor=self.num_replicas)])
@@ -71,9 +75,9 @@ class Producer:
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        if self.producer_inst:
-            self.producer_inst.flush()
-            self.producer_inst = None
+        if self.producer:
+            self.producer.flush()
+            self.producer = None
 
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""

@@ -4,12 +4,12 @@
   "name": "arrival.value",
   "fields": [
     {"name": "station_id", "type": "int"},
-    {"name": "train_id", "type": "int"},
-    {"name": "direction", "type": "string"},
-    {"name": "line", "type": "string"},
-    {"name": "train_status", "type": "int"},
-    {"name": "prev_station_id", "type": "int"},
-    {"name": "prev_direction", "type": "string"}
+    {"name": "train_id", "type": ["string" ,"null"]},
+    {"name": "direction", "type": ["string","null"]},
+    {"name": "line", "type": ["string","null"]},
+    {"name": "train_status", "type": ["string","null"]},
+    {"name": "prev_station_id", "type": ["int","null"]},
+    {"name": "prev_direction", "type": ["string","null"]}
   ]
 }
 

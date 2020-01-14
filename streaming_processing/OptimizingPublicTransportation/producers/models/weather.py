@@ -1,4 +1,5 @@
 """Methods pertaining to weather data"""
+from dataclasses import dataclass, asdict
 from enum import IntEnum
 import json
 import logging
@@ -6,6 +7,7 @@ from pathlib import Path
 import random
 import urllib.parse
 
+from confluent_kafka.avro import loads
 import requests
 
 from producers.models.producer import Producer
@@ -31,6 +33,12 @@ class Weather(Producer):
 
     winter_months = set((0, 1, 2, 3, 10, 11))
     summer_months = set((6, 7, 8))
+
+    @dataclass
+    class WeatherData:
+        temperature: int
+        status: str
+
 
     def __init__(self, month):
         super().__init__(
@@ -70,29 +78,47 @@ class Weather(Producer):
         self._set_weather(month)
 
         headers = {"Content-Type": "application/vnd.kafka.avro.v2+json"}
-        logger.info("weather kafka proxy integration incomplete - skipping")
-        resp = requests.post(
+        logger.info("weather kafka proxy integration started")
+        logger.info(f"temp: {float(self.temp)}, status: {self.status.name}")
+        weather = self.WeatherData(temperature=self.temp, status=self.status.name)
 
-           f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
-           headers=headers,
-           data=json.dumps(
-               {
-                   "value_schema": self.value_schema,
+        value_schema = """
+        {
+          "namespace": "com.udacity",
+          "type": "record",
+          "name": "weather.value",
+          "fields": [
+            {"name": "temperature", "type": "float"},
+            {"name": "status", "type": "string"}
+          ]
+        }
+        """
+
+        data = {
+                   "value_schema": value_schema,
                    "records": [
                        {
-                           "value": {
-                               "temperature": self.temp,
-                               "status": self.status
-                           },
+                           "value": asdict(weather)
                        }
                    ]
                }
-           ),
+        resp = requests.post(
+           f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
+           headers=headers,
+           data=json.dumps(data)
         )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except Exception as e:
+            logger.error(json.dumps(resp.json()))
+            raise e
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",
             self.temp,
             self.status.name,
         )
+
+if __name__ == '__main__':
+    a = Weather(1)
+    a.run(1)

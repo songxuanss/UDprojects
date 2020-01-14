@@ -4,7 +4,8 @@ from pathlib import Path
 
 from confluent_kafka import avro
 
-from producers.models import Turnstile, Train
+from producers.models.train import Train
+from producers.models.turnstile import Turnstile
 from producers.models.producer import Producer
 
 
@@ -37,7 +38,7 @@ class Station(Producer):
         # replicas
         #
         #
-        topic_name = f"{station_name}_arrival_event"
+        topic_name = "station_arrival_event"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
@@ -74,11 +75,13 @@ class Station(Producer):
                "station_id": self.station_id,
                "train_id": train.train_id,
                "direction": direction,
-               "line": self.color,
-               "train_status": train.status,
+               "line": self.color.name,
+               "train_status": train.status.name,
                "prev_station_id": prev_station_id,
                "prev_direction": prev_direction
-           }
+           },
+        value_schema=self.value_schema,
+        key_schema=self.key_schema
         )
 
     def __str__(self):

@@ -19,10 +19,9 @@ class Turnstile(Producer):
     #
     # TODO: Define this value schema in `schemas/turnstile_value.json, then uncomment the below
     #
-    value_schema = avro.load(
-       f"{Path(__file__).parents[0]}/schemas/turnstile_value.json"
-    )
-
+    print (f"{Path(__file__).parents[0]}/schemas/turnstile_value.json")
+    value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/turnstile_value.json")
+    print (value_schema)
     def __init__(self, station):
         """Create the Turnstile"""
         station_name = (
@@ -42,11 +41,13 @@ class Turnstile(Producer):
         super().__init__(
             "turnstile_event",
             key_schema=Turnstile.key_schema,
-            num_partitions=self.num_partitions,
-            num_replicas=self.num_replicas
+            value_schema=Turnstile.value_schema,
+            num_partitions=self.NUM_PARTITIONS,
+            num_replicas=self.NUM_REPLICAS
         )
         self.station = station
         self.turnstile_hardware = TurnstileHardware(station)
+
 
     def run(self, timestamp, time_step):
         """Simulates riders entering through the turnstile."""
@@ -58,12 +59,16 @@ class Turnstile(Producer):
         # of entries that were calculated
         #
         #
+
+        logger.debug(self.value_schema)
         self.producer.produce(
             topic=self.topic_name,
             key={"timestamp": self.time_millis()},
             value={
-                "station_id": self.station_id,
-                "line": self.station.color,
+                "station_id": self.station.station_id,
+                "line": self.station.color.name,
                 "station_name": self.station.name
-            }
+            },
+            value_schema=self.value_schema,
+            key_schema=self.key_schema
         )
