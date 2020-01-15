@@ -16,11 +16,10 @@ class Station(Producer):
     """Defines a single station"""
 
     key_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_key.json")
-
     value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
-
     NUM_PARTITION = 3
     NUM_REPLICA = 1
+    TOPIC_PREFIX = "org.chicago.cta.station.arrivals."
 
     def __init__(self, station_id, name, color, direction_a=None, direction_b=None):
         self.name = name
@@ -38,7 +37,7 @@ class Station(Producer):
         # replicas
         #
         #
-        topic_name = "station_arrival_event"
+        topic_name = f"{self.TOPIC_PREFIX}{station_name}"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,

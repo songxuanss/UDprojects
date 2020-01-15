@@ -32,15 +32,15 @@ CREATE TABLE turnstile (
     KEY='station_id'
 );
 
-CREATE TABLE turnstile_summary (
-    station_id int,
-    count int  
-) WITH (
+    
+CREATE TABLE turnstile_summary
+WITH (
     KAFKA_TOPIC='TURNSTILE_SUMMARY',
     VALUE_FORMAT='JSON',
-    KEY='station_id') AS
-    SELECT station_id, count(*)
-    GROUP BY station_id
+    PARTITIONS=1
+) AS 
+    SELECT station_id, count(*) as count FROM turnstile
+    GROUP BY station_id;
 """
 
 
