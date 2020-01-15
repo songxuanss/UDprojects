@@ -6,8 +6,7 @@ from confluent_kafka import Consumer
 from confluent_kafka.avro import AvroConsumer
 from confluent_kafka.avro.serializer import SerializerError
 from tornado import gen
-
-from common import common
+import common
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +31,10 @@ class KafkaConsumer:
         self.offset_earliest = offset_earliest
 
         #
-        #
-        # TODO: Configure the broker properties below. Make sure to reference the project README
-        # and use the Host URL for Kafka and Schema Registry!
-        #
-        #
         self.broker_properties = {
+            "group.id": "group1",
             "bootstrap.servers": common.BROKER_URL,
-            "linger.ms": 10000,
+            "linger.ms": 1000,
             "acks": 1,
             "retries": 3,
             "message.max.bytes": 4 * 4096,
@@ -53,7 +48,7 @@ class KafkaConsumer:
         else:
             self.consumer = Consumer(self.broker_properties)
 
-        self.consumer.subscribe(topic_name_pattern, on_assign=self.on_assign)
+        self.consumer.subscribe([topic_name_pattern], on_assign=self.on_assign)
 
     def on_assign(self, consumer, partitions):
         """Callback for when topic assignment takes place"""

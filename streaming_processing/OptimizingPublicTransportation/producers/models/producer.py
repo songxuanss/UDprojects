@@ -6,8 +6,8 @@ import time
 from confluent_kafka import avro
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.avro import AvroProducer, CachedSchemaRegistryClient
-from common import common
-from consumers import topic_check
+import common
+import topic_check
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class Producer:
     existing_topics = set([])
     BROKER_URL = common.BROKER_URL
     SCHEMA_REGISTRY_URL = common.SCHEMA_REGISTRY_URL
-
+    TOPIC_LIST_CACHED = None
     def __init__(
         self,
         topic_name,
@@ -39,10 +39,10 @@ class Producer:
 
         self.broker_properties = {
             "bootstrap.servers": self.BROKER_URL,
-            "linger.ms": 10000,
+            "linger.ms": 500,
             "acks": 1,
             "retries": 3,
-            "message.max.bytes": 4 * 4096,
+            "message.max.bytes": 4096,
             "batch.num.messages": 10
         }
 
@@ -57,8 +57,18 @@ class Producer:
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
         # TODO: Write code that creates the topic for this producer if it does not already exist on
-        if topic_check.topic_exists(self.topic_name):
+        logger.info(f"check topic {self.topic_name}")
+        if topic_check.topic_exists(self.topic_name.strip()):
+            logger.info(f"topic {self.topic_name} exist")
             return
+
+        # if not Producer.TOPIC_LIST_CACHED or len(Producer.TOPIC_LIST_CACHED) == 0:
+        #     Producer.TOPIC_LIST_CACHED = topic_check.list_topics()
+        #     logger.info(f"get list of topics cached,,,{Producer.TOPIC_LIST_CACHED}")
+        #
+        # if self.topic_name in Producer.TOPIC_LIST_CACHED:
+        #     logger.info(f"topic {self.topic_name} exist")
+        #     return
 
         client = AdminClient({"bootstrap.servers": self.BROKER_URL})
         futures = client.create_topics([NewTopic(topic=self.topic_name, num_partitions=self.num_partitions,
